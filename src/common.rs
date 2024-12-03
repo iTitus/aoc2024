@@ -1,12 +1,11 @@
-use std::fmt::Debug;
-use std::hash::Hash;
-use std::ops::{Index, IndexMut};
-use std::str::FromStr;
-
 use nalgebra::{Dim, Matrix, Scalar, Storage, Vector2};
 use nalgebra::{SVector, Vector3};
 use num::rational::Ratio;
 use num::{Rational64, Signed};
+use std::fmt::Debug;
+use std::hash::Hash;
+use std::ops::{Index, IndexMut};
+use std::str::FromStr;
 use thiserror::Error;
 
 pub type Rational128 = Ratio<i128>;
@@ -204,9 +203,7 @@ impl<T> IndexMut<Vec2i> for Grid<T> {
 pub fn parse_split_whitespace<T: FromStr, B: FromIterator<T>>(
     s: &str,
 ) -> Result<B, <T as FromStr>::Err> {
-    s.split_whitespace()
-        .map(str::parse)
-        .collect::<Result<_, _>>()
+    s.split_whitespace().map(str::parse).collect()
 }
 
 pub fn parse_split<T: FromStr, B: FromIterator<T>>(
@@ -217,7 +214,7 @@ pub fn parse_split<T: FromStr, B: FromIterator<T>>(
         .map(str::trim)
         .filter(|s| !s.is_empty())
         .map(str::parse)
-        .collect::<Result<_, _>>()
+        .collect()
 }
 
 pub fn parse_lines<T: FromStr, B: FromIterator<T>>(s: &str) -> Result<B, <T as FromStr>::Err> {
