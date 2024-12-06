@@ -1,5 +1,6 @@
 use crate::common::{Direction, Grid, Vec2i};
 use aoc_runner_derive::{aoc, aoc_generator};
+use itertools::Itertools;
 use rustc_hash::FxHashSet;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -29,7 +30,7 @@ pub fn input_generator(input: &str) -> Grid<Tile> {
     input.parse().unwrap()
 }
 
-fn get_path(grid: &Grid<Tile>) -> (FxHashSet<Vec2i>, bool) {
+fn get_path(grid: &Grid<Tile>) -> (FxHashSet<(Vec2i, Direction)>, bool) {
     let (start_pos, start_dir) = grid
         .pos_iter()
         .find_map(|(pos, tile)| {
@@ -70,15 +71,14 @@ fn get_path(grid: &Grid<Tile>) -> (FxHashSet<Vec2i>, bool) {
         }
     };
 
-    let path = all_pos.iter().map(|(pos, _)| *pos).collect();
-    (path, out_of_bounds)
+    (all_pos, out_of_bounds)
 }
 
 #[aoc(day6, part1)]
 pub fn part1(grid: &Grid<Tile>) -> usize {
     let (path, out_of_bounds) = get_path(grid);
     assert!(out_of_bounds);
-    path.len()
+    path.iter().map(|(pos, _)| *pos).unique().count()
 }
 
 #[aoc(day6, part2)]
@@ -88,7 +88,7 @@ pub fn part2(grid: &Grid<Tile>) -> usize {
 
     let mut loops = 0;
     let mut grid = grid.clone();
-    for obstacle_candidate in path {
+    for obstacle_candidate in path.iter().map(|(pos, _)| *pos).unique() {
         if grid[obstacle_candidate] == Tile::Empty {
             grid[obstacle_candidate] = Tile::Obstacle;
 
@@ -105,9 +105,9 @@ pub fn part2(grid: &Grid<Tile>) -> usize {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use pretty_assertions::assert_eq;
 
-    use super::*;
     const INPUT: &str = r#"....#.....
 .........#
 ..........

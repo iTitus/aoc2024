@@ -104,9 +104,9 @@ pub fn part2(input: &Grid<char>) -> usize {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use pretty_assertions::assert_eq;
 
-    use super::*;
     const INPUT: &str = r#"MMMSXXMASM
 MSAMXMSMSA
 AMXSXMAAMM

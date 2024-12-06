@@ -35,9 +35,8 @@ pub fn part2(input: &[(u32, u32)]) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
-
     use super::*;
+    use pretty_assertions::assert_eq;
 
     const INPUT: &str = r#"3   4
 4   3

@@ -48,9 +48,8 @@ pub fn part2(input: &[Vec<u32>]) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
-
     use super::*;
+    use pretty_assertions::assert_eq;
 
     const INPUT: &str = r#"7 6 4 2 1
 1 2 7 8 9

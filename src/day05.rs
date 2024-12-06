@@ -69,9 +69,9 @@ pub fn part2((rules, updates): &(FxHashSet<(u32, u32)>, Vec<Vec<u32>>)) -> u32 {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use pretty_assertions::assert_eq;
 
-    use super::*;
     const INPUT: &str = r#"47|53
 97|13
 97|61
