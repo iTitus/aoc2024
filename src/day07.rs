@@ -36,7 +36,7 @@ fn is_valid(result: u64, numbers: &[u64], part2: bool) -> bool {
         }
     }
 
-    if result == 0 || result == 1 && numbers.is_empty() {
+    if (result == 0 || result == 1) && numbers.is_empty() {
         true
     } else {
         is_valid_rec(numbers[0], &numbers[1..], result, part2)
