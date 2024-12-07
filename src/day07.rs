@@ -1,8 +1,9 @@
 use crate::common::parse_split_whitespace;
 use aoc_runner_derive::{aoc, aoc_generator};
+use std::num::NonZeroU64;
 
 #[aoc_generator(day7)]
-pub fn input_generator(input: &str) -> Vec<(u64, Vec<u64>)> {
+pub fn input_generator(input: &str) -> Vec<(u64, Vec<NonZeroU64>)> {
     input
         .lines()
         .map(|l| {
@@ -12,51 +13,50 @@ pub fn input_generator(input: &str) -> Vec<(u64, Vec<u64>)> {
         .collect()
 }
 
-fn is_valid(result: u64, numbers: &[u64], part2: bool) -> bool {
-    fn concat(a: u64, b: u64) -> u64 {
-        let log = if b < 10 { 1 } else { b.ilog10() + 1 };
-        a * 10u64.pow(log) + b
+fn is_valid<const PART_2: bool>(result: u64, numbers: &[NonZeroU64]) -> bool {
+    fn next_highest_power_of_10(n: NonZeroU64) -> NonZeroU64 {
+        const TEN: NonZeroU64 = NonZeroU64::new(10).unwrap();
+        TEN.checked_pow(n.ilog10() + 1).unwrap()
     }
 
-    fn is_valid_rec(current: u64, numbers: &[u64], result: u64, part2: bool) -> bool {
-        if numbers.is_empty() {
-            current == result
-        } else if result == 0 && current == 0 {
-            true
-        } else {
-            let n = numbers[0];
-            let rest = &numbers[1..];
-            if is_valid_rec(current + n, rest, result, part2)
-                || is_valid_rec(current * n, rest, result, part2)
-            {
-                true
-            } else {
-                part2 && is_valid_rec(concat(current, n), rest, result, part2)
+    match numbers {
+        [] => result == 0 || result == 1,
+        [n] => n.get() == result,
+        [rest @ .., last] => {
+            if result <= last.get() {
+                return false;
             }
-        }
-    }
 
-    if (result == 0 || result == 1) && numbers.is_empty() {
-        true
-    } else {
-        is_valid_rec(numbers[0], &numbers[1..], result, part2)
+            if result % *last == 0 && is_valid::<PART_2>(result / *last, rest) {
+                return true;
+            }
+
+            if PART_2 {
+                let pow10 = next_highest_power_of_10(*last);
+                if result % pow10 == last.get() && is_valid::<PART_2>(result / pow10, rest) {
+                    return true;
+                }
+            }
+
+            is_valid::<PART_2>(result - last.get(), rest)
+        }
     }
 }
 
 #[aoc(day7, part1)]
-pub fn part1(input: &[(u64, Vec<u64>)]) -> u64 {
+pub fn part1(input: &[(u64, Vec<NonZeroU64>)]) -> u64 {
     input
         .iter()
-        .filter(|(result, numbers)| is_valid(*result, numbers, false))
+        .filter(|(result, numbers)| is_valid::<false>(*result, numbers))
         .map(|(result, _)| *result)
         .sum()
 }
 
 #[aoc(day7, part2)]
-pub fn part2(input: &[(u64, Vec<u64>)]) -> u64 {
+pub fn part2(input: &[(u64, Vec<NonZeroU64>)]) -> u64 {
     input
         .iter()
-        .filter(|(result, numbers)| is_valid(*result, numbers, true))
+        .filter(|(result, numbers)| is_valid::<true>(*result, numbers))
         .map(|(result, _)| *result)
         .sum()
 }
