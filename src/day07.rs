@@ -13,17 +13,17 @@ pub fn input_generator(input: &str) -> Vec<(u64, Vec<NonZeroU64>)> {
         .collect()
 }
 
-fn is_valid<const PART_2: bool>(result: u64, numbers: &[NonZeroU64]) -> bool {
-    fn next_highest_power_of_10(n: NonZeroU64) -> NonZeroU64 {
-        const TEN: NonZeroU64 = NonZeroU64::new(10).unwrap();
-        TEN.checked_pow(n.ilog10() + 1).unwrap()
-    }
+const fn next_highest_power_of_10(n: NonZeroU64) -> NonZeroU64 {
+    const TEN: NonZeroU64 = NonZeroU64::new(10).unwrap();
+    TEN.checked_pow(n.ilog10() + 1).unwrap()
+}
 
+fn is_valid<const PART_2: bool>(result: u64, numbers: &[NonZeroU64]) -> bool {
     match numbers {
         [] => result == 0 || result == 1,
         [n] => n.get() == result,
         [rest @ .., last] => {
-            if result <= last.get() {
+            if result < last.get() {
                 return false;
             }
 
@@ -84,5 +84,57 @@ mod tests {
     #[test]
     fn test_part2() {
         assert_eq!(part2(&input_generator(INPUT)), 11387);
+    }
+
+    #[test]
+    fn test_power10() {
+        assert_eq!(
+            next_highest_power_of_10(NonZeroU64::new(1).unwrap()),
+            NonZeroU64::new(10).unwrap()
+        );
+        assert_eq!(
+            next_highest_power_of_10(NonZeroU64::new(2).unwrap()),
+            NonZeroU64::new(10).unwrap()
+        );
+        assert_eq!(
+            next_highest_power_of_10(NonZeroU64::new(3).unwrap()),
+            NonZeroU64::new(10).unwrap()
+        );
+        assert_eq!(
+            next_highest_power_of_10(NonZeroU64::new(4).unwrap()),
+            NonZeroU64::new(10).unwrap()
+        );
+        assert_eq!(
+            next_highest_power_of_10(NonZeroU64::new(5).unwrap()),
+            NonZeroU64::new(10).unwrap()
+        );
+        assert_eq!(
+            next_highest_power_of_10(NonZeroU64::new(6).unwrap()),
+            NonZeroU64::new(10).unwrap()
+        );
+        assert_eq!(
+            next_highest_power_of_10(NonZeroU64::new(7).unwrap()),
+            NonZeroU64::new(10).unwrap()
+        );
+        assert_eq!(
+            next_highest_power_of_10(NonZeroU64::new(8).unwrap()),
+            NonZeroU64::new(10).unwrap()
+        );
+        assert_eq!(
+            next_highest_power_of_10(NonZeroU64::new(9).unwrap()),
+            NonZeroU64::new(10).unwrap()
+        );
+        assert_eq!(
+            next_highest_power_of_10(NonZeroU64::new(10).unwrap()),
+            NonZeroU64::new(100).unwrap()
+        );
+        assert_eq!(
+            next_highest_power_of_10(NonZeroU64::new(99).unwrap()),
+            NonZeroU64::new(100).unwrap()
+        );
+        assert_eq!(
+            next_highest_power_of_10(NonZeroU64::new(100).unwrap()),
+            NonZeroU64::new(1000).unwrap()
+        );
     }
 }
