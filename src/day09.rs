@@ -27,7 +27,6 @@ pub fn input_generator(input: &str) -> Vec<Disk> {
 }
 
 fn compact_disk<const PART2: bool>(disk_map: &[Disk]) -> Vec<Disk> {
-    println!("compact_disk");
     let mut compact = disk_map.to_vec();
     if compact.len() <= 1 {
         return compact;
@@ -132,6 +131,7 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     const INPUT: &str = r#"2333133121414131402"#;
+    const CHALLENGE: &str = include_str!("../alternative_inputs/day9.txt");
 
     #[test]
     fn test_part1() {
@@ -141,5 +141,15 @@ mod tests {
     #[test]
     fn test_part2() {
         assert_eq!(part2(&input_generator(INPUT)), 2858);
+    }
+
+    #[test]
+    fn test_part1_challenge() {
+        assert_eq!(part1(&input_generator(CHALLENGE)), 63614979355824);
+    }
+
+    #[test]
+    fn test_part2_challenge() {
+        assert_eq!(part2(&input_generator(CHALLENGE)), 97898222299196);
     }
 }

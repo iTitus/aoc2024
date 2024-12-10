@@ -79,6 +79,7 @@ mod tests {
 32019012
 01329801
 10456732"#;
+    const CHALLENGE: &str = include_str!("../alternative_inputs/day10.txt");
 
     #[test]
     fn test_part1() {
@@ -88,5 +89,15 @@ mod tests {
     #[test]
     fn test_part2() {
         assert_eq!(part2(&input_generator(INPUT)), 81);
+    }
+
+    #[test]
+    fn test_part1_challenge() {
+        assert_eq!(part1(&input_generator(CHALLENGE)), 464);
+    }
+
+    #[test]
+    fn test_part2_challenge() {
+        assert_eq!(part2(&input_generator(CHALLENGE)), 16451);
     }
 }
