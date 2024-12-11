@@ -15,11 +15,11 @@ lazy_static = "1.5"
 nalgebra = "0.33"
 num = "0.4"
 once_cell = "1.20"
-pathfinding = "4.11"
+pathfinding = "4.12"
 regex = "1"
 rustc-hash = "2.1"
 thiserror = "2.0"
-tinyvec = "1.8"
+tinyvec = { version = "1.8", features = ["std", "rustc_1_61", "rustc_1_57", "rustc_1_55"] }
 
 [dev-dependencies]
 pretty_assertions = "1.4"
