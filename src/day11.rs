@@ -11,7 +11,7 @@ pub fn input_generator(input: &str) -> Vec<u64> {
 }
 
 fn split(s: u64) -> ArrayVec<[u64; 2]> {
-    let mut r = array_vec!([u64; 2]);
+    let mut r = array_vec!();
     if s == 0 {
         r.push(1);
     } else {
