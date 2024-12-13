@@ -1,4 +1,4 @@
-use nalgebra::{Dim, Matrix, Scalar, Storage, Vector2};
+use nalgebra::{Dim, Matrix, Matrix2, Scalar, Storage, Vector2};
 use nalgebra::{SVector, Vector3};
 use num::rational::Ratio;
 use num::{Rational64, Signed};
@@ -15,6 +15,9 @@ pub type Vec2r128 = Vector2<Rational128>;
 pub type Vec3i = Vector3<i64>;
 pub type Vec3r = Vector3<Rational64>;
 pub type Vec3r128 = Vector3<Rational128>;
+pub type Mat2i = Matrix2<i64>;
+pub type Mat2r = Matrix2<Rational64>;
+pub type Mat2r128 = Matrix2<Rational128>;
 
 pub fn lp1_norm<T: Scalar + Signed, R: Dim, C: Dim, S: Storage<T, R, C>>(
     v: &Matrix<T, R, C, S>,
