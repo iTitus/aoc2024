@@ -12,6 +12,7 @@ pub type Rational128 = Ratio<i128>;
 pub type Vec2i = Vector2<i64>;
 pub type Vec2r = Vector2<Rational64>;
 pub type Vec2r128 = Vector2<Rational128>;
+pub type Vec2f = Vector2<f64>;
 pub type Vec3i = Vector3<i64>;
 pub type Vec3r = Vector3<Rational64>;
 pub type Vec3r128 = Vector3<Rational128>;

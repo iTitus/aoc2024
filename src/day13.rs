@@ -73,6 +73,8 @@ fn solve<const PART2: bool>(m: &ArcadeMachine) -> usize {
                 return A_COST * res_a as usize + B_COST * res_b as usize;
             }
         }
+    } else {
+        unimplemented!();
     }
 
     0
