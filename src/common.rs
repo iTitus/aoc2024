@@ -143,6 +143,22 @@ where
     }
 }
 
+impl<T: Clone> Grid<T> {
+    pub fn new_from_element(size_x: usize, size_y: usize, element: T) -> Self {
+        Self {
+            size_x,
+            size_y,
+            grid: vec![element; size_x * size_y],
+        }
+    }
+}
+
+impl<T: Default + Clone> Grid<T> {
+    pub fn new_from_default(size_x: usize, size_y: usize) -> Self {
+        Self::new_from_element(size_x, size_y, T::default())
+    }
+}
+
 impl<T> Grid<T> {
     pub fn in_bounds(&self, pos: &Vec2i) -> bool {
         pos.x >= 0 && (pos.x as usize) < self.size_x && pos.y >= 0 && (pos.y as usize) < self.size_y
