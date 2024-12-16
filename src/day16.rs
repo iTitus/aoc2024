@@ -69,8 +69,7 @@ pub fn part2(grid: &Grid<Tile>) -> usize {
         .find(|(_, &tile)| tile == Tile::Start)
         .unwrap();
 
-    // using yen's algorithm because I do not want to re-implement dijkstra with multi-path tracking
-    let paths = yen(
+    let (paths, _cost) = astar_bag(
         &(start, Direction::East),
         |&(pos, dir)| {
             let mut succ = [
@@ -86,16 +85,13 @@ pub fn part2(grid: &Grid<Tile>) -> usize {
 
             succ.into_iter().flatten()
         },
+        |_| 0, // there were no significant performance differences with a heuristic
         |&(pos, _)| grid[pos] == Tile::End,
-        11, // hardcoded number, works for my input
-    );
+    )
+    .unwrap();
 
-    let min_score = paths[0].1;
-    assert!(paths.iter().any(|(_, score)| *score != min_score));
     paths
-        .into_iter()
-        .filter(|(_, score)| *score == min_score)
-        .flat_map(|(path, _)| path.into_iter().map(|(pos, _)| pos))
+        .flat_map(|path| path.into_iter().map(|(pos, _)| pos))
         .unique()
         .count()
 }
