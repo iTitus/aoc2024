@@ -71,7 +71,7 @@ impl Device {
             }
             2 => {
                 // bst
-                self.reg[1] = self.combo_operand(operand) & 0b111;
+                self.reg[1] = self.combo_operand(operand) & 0x7;
             }
             3 => {
                 // jnz
@@ -86,8 +86,7 @@ impl Device {
             }
             5 => {
                 // out
-                self.output
-                    .push((self.combo_operand(operand) & 0b111) as u8)
+                self.output.push((self.combo_operand(operand) & 0x7) as u8)
             }
             6 => {
                 // bdv
@@ -150,44 +149,52 @@ impl Device {
             match instruction {
                 0 => {
                     write!(w, "A = A >> ")?;
-                    dump_combo_operand(operand, w)?;
+                    dump_combo_operand(operand, false, w)?;
                 }
-                1 => write!(w, "B = B ^ {operand}")?,
+                1 => write!(w, "B = B ^ {operand:#x}")?,
                 2 => {
                     write!(w, "B = ")?;
-                    dump_combo_operand(operand, w)?;
-                    write!(w, " & 0x7")?;
+                    dump_combo_operand(operand, true, w)?;
                 }
                 3 => write!(w, "IF A != 0: JMP {operand}")?,
                 4 => write!(w, "B = B ^ C")?,
                 5 => {
                     write!(w, "OUT ")?;
-                    dump_combo_operand(operand, w)?;
-                    write!(w, " & 0x7")?;
+                    dump_combo_operand(operand, true, w)?;
                 }
                 6 => {
                     write!(w, "B = A >> ")?;
-                    dump_combo_operand(operand, w)?;
+                    dump_combo_operand(operand, false, w)?;
                 }
                 7 => {
                     write!(w, "C = A >> ")?;
-                    dump_combo_operand(operand, w)?;
+                    dump_combo_operand(operand, false, w)?;
                 }
                 _ => unreachable!(),
             }
             Ok(())
         }
 
-        fn dump_combo_operand(operand: u8, w: &mut impl io::Write) -> io::Result<()> {
+        fn dump_combo_operand(
+            operand: u8,
+            lower_bits_only: bool,
+            w: &mut impl io::Write,
+        ) -> io::Result<()> {
             match operand {
                 0..=3 => write!(w, "{operand}")?,
-                4..=6 => write!(w, "{}", (b'A' + (operand - 4)) as char)?,
+                4..=6 => {
+                    write!(w, "{}", (b'A' + (operand - 4)) as char)?;
+                    if lower_bits_only {
+                        write!(w, " & 0x7")?;
+                    }
+                }
                 _ => unreachable!(),
             }
             Ok(())
         }
 
-        for (&instruction, &operand) in self.instructions.iter().tuples() {
+        for ((i, &instruction), (_, &operand)) in self.instructions.iter().enumerate().tuples() {
+            write!(&mut w, "{i:>2}: ").unwrap();
             dump_instruction(instruction, operand, &mut w).unwrap();
             writeln!(&mut w).unwrap();
         }
@@ -238,11 +245,6 @@ pub fn part2(input: &Program) -> i64 {
 
     let mut device: Device = input.clone().into();
     device.dump_program(io::stdout());
-    /*
-    A = 0..=7 ?
-    B = (A & 7) ^ 1
-    0 = ( (B ^ 4) ^ (A >> B) ) & 7
-    */
 
     let mut q: VecDeque<_> = [(0, input.instructions.len() - 1)].into();
     while let Some((a, idx)) = q.pop_front() {
@@ -257,12 +259,13 @@ pub fn part2(input: &Program) -> i64 {
                 if idx == 0 {
                     return a;
                 }
+
                 q.push_back((a, idx - 1));
             }
         }
     }
 
-    0
+    unreachable!();
 }
 
 #[cfg(test)]
