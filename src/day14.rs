@@ -43,10 +43,10 @@ fn check_grid_size(robots: &[Robot]) -> Vec2i {
         .minmax()
         .into_option()
         .unwrap();
-    assert!(min_x >= 0);
-    assert!(max_x >= min_x);
-    assert!(min_y >= 0);
-    assert!(max_y >= min_y);
+    assert_eq!(min_x, 0);
+    assert_eq!(min_y, 0);
+    assert_eq!((max_x + 1) % 2, 1);
+    assert_eq!((max_y + 1) % 2, 1);
 
     Vec2i::new(max_x + 1, max_y + 1)
 }
