@@ -32,13 +32,7 @@ pub fn input_generator(input: &str) -> Grid<Tile> {
     input.parse().unwrap()
 }
 
-fn solve(grid: &Grid<Tile>, max_cheat_distance: usize, amount_saved: usize) -> usize {
-    let (start, _) = grid
-        .pos_iter()
-        .filter(|(_, &tile)| tile == Tile::Start)
-        .exactly_one()
-        .map_err(|_| ())
-        .unwrap();
+fn solve(grid: &Grid<Tile>, max_cheat_distance: usize, min_amount_saved: usize) -> usize {
     let (end, _) = grid
         .pos_iter()
         .filter(|(_, &tile)| tile == Tile::End)
@@ -46,47 +40,39 @@ fn solve(grid: &Grid<Tile>, max_cheat_distance: usize, amount_saved: usize) -> u
         .map_err(|_| ())
         .unwrap();
 
-    let all_paths_from_start = dijkstra_all(&start, |&p| {
+    let all_distances_from_end = dijkstra_all(&end, |&p| {
         Direction::VALUES
             .iter()
             .map(move |d| d.offset(&p))
             .filter(|&n| grid.in_bounds(&n) && grid[n] != Tile::Wall)
             .map(|p| (p, 1usize))
-    });
-    assert!(all_paths_from_start.contains_key(&end));
-    let all_paths_from_end = dijkstra_all(&end, |&p| {
-        Direction::VALUES
-            .iter()
-            .map(move |d| d.offset(&p))
-            .filter(|&n| grid.in_bounds(&n) && grid[n] != Tile::Wall)
-            .map(|p| (p, 1usize))
-    });
-    assert!(all_paths_from_end.contains_key(&start));
-    let original_path_length = all_paths_from_start[&end].1;
+    })
+    .into_iter()
+    .map(|(v, (_, d))| (v, d))
+    .chain([(end, 0)])
+    .collect_vec();
 
-    [start]
+    /*
+    real_dist = |start->cheat_start| + |cheat_start->cheat_end| + |cheat_end->end|
+              = |start->cheat_start| + |cheat_start->end|
+    cheat_dist = |start->cheat_start| + lp1(cheat_start, cheat_end) + |cheat_end->end|
+
+        real_dist - cheat_dist >= min_amount_saved
+    <=> |start->cheat_start| + |cheat_start->end| - |start->cheat_start| - lp1(cheat_start, cheat_end) - |cheat_end->end| >= min_amount_saved
+    <=> |cheat_start->end| - lp1(cheat_start, cheat_end) - |cheat_end->end| >= min_amount_saved
+    <=> |cheat_start->end| - |cheat_end->end| >= min_amount_saved + lp1(cheat_start, cheat_end)
+
+    We could use cartesian_product to iterate over every pair of reachable...
+    But using tuple_combinations we get each (a, b) and (b, a) exactly once which is fine:
+    Only one pair will have a non-negative lhs, so we use abs_diff to check both at once.
+    */
+    all_distances_from_end
         .into_iter()
-        .chain(all_paths_from_start.keys().copied())
-        .cartesian_product([end].into_iter().chain(all_paths_from_end.keys().copied()))
-        .filter(|&(cheat_start, cheat_end)| {
-            let cheat_distance = lp1_norm(&(cheat_end - cheat_start)) as usize;
-            if cheat_distance > max_cheat_distance {
-                return false;
-            }
-
-            let distance_from_start = if cheat_start == start {
-                0
-            } else {
-                all_paths_from_start[&cheat_start].1
-            };
-            let distance_from_end = if cheat_end == end {
-                0
-            } else {
-                all_paths_from_end[&cheat_end].1
-            };
-
-            let new_length = distance_from_start + cheat_distance + distance_from_end;
-            new_length <= original_path_length && original_path_length - new_length >= amount_saved
+        .tuple_combinations()
+        .filter(|&((p1, d1), (p2, d2))| {
+            let cheat_distance = lp1_norm(&(p1 - p2)) as usize;
+            cheat_distance <= max_cheat_distance
+                && d1.abs_diff(d2) >= cheat_distance + min_amount_saved
         })
         .count()
 }
