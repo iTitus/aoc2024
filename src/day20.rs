@@ -32,7 +32,7 @@ pub fn input_generator(input: &str) -> Grid<Tile> {
     input.parse().unwrap()
 }
 
-fn solve(grid: &Grid<Tile>, max_cheat_length: usize, amount_saved: usize) -> usize {
+fn solve(grid: &Grid<Tile>, max_cheat_distance: usize, amount_saved: usize) -> usize {
     let (start, _) = grid
         .pos_iter()
         .filter(|(_, &tile)| tile == Tile::Start)
@@ -46,54 +46,49 @@ fn solve(grid: &Grid<Tile>, max_cheat_length: usize, amount_saved: usize) -> usi
         .map_err(|_| ())
         .unwrap();
 
-    let all_paths = dijkstra_all(&end, |&p| {
+    let all_paths_from_start = dijkstra_all(&start, |&p| {
         Direction::VALUES
             .iter()
             .map(move |d| d.offset(&p))
             .filter(|&n| grid.in_bounds(&n) && grid[n] != Tile::Wall)
             .map(|p| (p, 1usize))
     });
-    let &(_, original_path_len) = all_paths.get(&start).expect("no path from start to end");
+    assert!(all_paths_from_start.contains_key(&end));
+    let all_paths_from_end = dijkstra_all(&end, |&p| {
+        Direction::VALUES
+            .iter()
+            .map(move |d| d.offset(&p))
+            .filter(|&n| grid.in_bounds(&n) && grid[n] != Tile::Wall)
+            .map(|p| (p, 1usize))
+    });
+    assert!(all_paths_from_end.contains_key(&start));
+    let original_path_length = all_paths_from_start[&end].1;
 
-    let mut count = 0;
-    let mut cheat_start = start;
-    let mut distance_from_start = 0;
-    loop {
-        let reach = bfs_reach(cheat_start, |&p| {
-            Direction::VALUES
-                .iter()
-                .map(move |d| d.offset(&p))
-                .filter(|&n| {
-                    lp1_norm(&(n - cheat_start)) as usize <= max_cheat_length && grid.in_bounds(&n)
-                })
-        });
-        for cheat_end in reach.filter(|&p| grid[p] != Tile::Wall) {
+    [start]
+        .into_iter()
+        .chain(all_paths_from_start.keys().copied())
+        .cartesian_product([end].into_iter().chain(all_paths_from_end.keys().copied()))
+        .filter(|&(cheat_start, cheat_end)| {
+            let cheat_distance = lp1_norm(&(cheat_end - cheat_start)) as usize;
+            if cheat_distance > max_cheat_distance {
+                return false;
+            }
+
+            let distance_from_start = if cheat_start == start {
+                0
+            } else {
+                all_paths_from_start[&cheat_start].1
+            };
             let distance_from_end = if cheat_end == end {
                 0
-            } else if let Some(&(_, len)) = all_paths.get(&cheat_end) {
-                len
             } else {
-                continue;
+                all_paths_from_end[&cheat_end].1
             };
 
-            let cheat_len = lp1_norm(&(cheat_end - cheat_start)) as usize;
-            let total_len = distance_from_start + cheat_len + distance_from_end;
-            if total_len <= original_path_len && original_path_len - total_len >= amount_saved {
-                count += 1;
-            }
-        }
-
-        if cheat_start == end {
-            break;
-        } else if let Some(&(parent, _)) = all_paths.get(&cheat_start) {
-            cheat_start = parent;
-            distance_from_start += 1;
-        } else {
-            unreachable!("no path from start to end");
-        }
-    }
-
-    count
+            let new_length = distance_from_start + cheat_distance + distance_from_end;
+            new_length <= original_path_length && original_path_length - new_length >= amount_saved
+        })
+        .count()
 }
 
 #[aoc(day20, part1)]
