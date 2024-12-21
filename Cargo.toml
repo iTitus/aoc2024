@@ -19,7 +19,7 @@ pathfinding = "4.12"
 regex = "1"
 rustc-hash = "2.1"
 thiserror = "2.0"
-tinyvec = { version = "1.8", features = ["std", "rustc_1_61", "rustc_1_57", "rustc_1_55"] }
+tinyvec = { version = "1.8", features = ["std", "rustc_1_61"] }
 
 [dev-dependencies]
 pretty_assertions = "1.4"
