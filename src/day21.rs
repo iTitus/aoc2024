@@ -171,7 +171,7 @@ impl<const N: usize> CachingSolver<N> {
             return cost;
         }
 
-        const MAX_PATH_LENGTH: usize = 7usize;
+        const MAX_PATH_LENGTH: usize = 8usize;
 
         // BFS to find all paths from->to
         let mut min: Option<usize> = None;
