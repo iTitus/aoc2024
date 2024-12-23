@@ -1,7 +1,6 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use rustc_hash::{FxHashMap, FxHashSet};
-use std::collections::VecDeque;
 
 #[aoc_generator(day23)]
 pub fn input_generator(input: &str) -> Vec<(String, String)> {
@@ -22,17 +21,17 @@ pub fn part1(input: &[(String, String)]) -> usize {
         graph.entry(b.as_str()).or_default().insert(a.as_str());
     }
 
+    // optimized algorithm to enumerate all 3-cliques
+    // is fast because the initial node needs to have a name that starts with 't'
     graph
-        .keys()
-        .copied()
-        .filter(|n| n.starts_with('t'))
-        .flat_map(|tn| {
-            graph[tn]
+        .iter()
+        .filter(|(n, _)| n.starts_with('t'))
+        .flat_map(|(tn, neighbors)| {
+            neighbors
                 .iter()
-                .copied()
                 .filter(move |&n| !n.starts_with('t') || tn < n)
                 .tuple_combinations()
-                .filter(|(a, b)| graph[a].contains(b))
+                .filter(|&(a, b)| graph[a].contains(b))
         })
         .count()
 }
@@ -47,27 +46,29 @@ pub fn part2(input: &[(String, String)]) -> String {
 
     graph
         .keys()
-        .map(|&n| {
+        .map(|&initial| {
+            // this only works because the input is nice
+            // (all nodes have the same degree N and the maximal clique contains N nodes)
+            // there might be case where this breaks:
+            // all nodes of the clique have N-1 edges used for the inter-clique connections,
+            // but 1 edge leads outside
+            // if the iteration order always has this connection first for all nodes in the clique,
+            // this greedy algorithm will not find that clique
             let mut clique = FxHashSet::default();
-            let mut q: VecDeque<_> = [n].into();
-            'outer: while let Some(n) = q.pop_front() {
+            let mut q = vec![initial];
+            while let Some(n) = q.pop() {
                 if clique.contains(n) {
-                    continue 'outer;
+                    continue;
                 }
 
-                let connected = &graph[n];
-                for &c in &clique {
-                    if !connected.contains(c) {
-                        continue 'outer;
-                    }
+                let neighbors = &graph[n];
+                if clique.difference(neighbors).next().is_some() {
+                    continue;
                 }
 
                 clique.insert(n);
-                for &child in &graph[n] {
-                    q.push_back(child);
-                }
+                q.extend(neighbors);
             }
-
             clique
         })
         .max_by_key(|clique| clique.len())
